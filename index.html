@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Parking Lot Management System</title>
+   <style>
+       :root {
+           --primary-color: #2c3e50;
+           --accent-color: #3498db;
+           --bg-color: #f4f6f7;
+           --border-color: #bdc3c7;
+       }
+
+
+       body {
+           font-family: Arial, sans-serif;
+           background-color: var(--bg-color);
+           background-image: url('campus.png');
+           background-size: cover;          /* Fills the entire screen */
+           background-position: center;     /* Centers the image */
+           background-repeat: no-repeat;    /* Prevents repeating/tiling */
+           background-attachment: fixed;    /* Keeps background locked to viewport */
+           margin: 0;
+           padding: 20px;
+           display: flex;
+           justify-content: center;
+           align-items: center;
+           min-height: 100vh;
+           box-sizing: border-box;
+       }
+
+
+       .container {
+           width: 900px;
+           height: 550px;
+           background: transparent;
+           border: none;
+           box-shadow: none;
+           display: flex;
+           position: relative;
+           overflow: hidden;
+           border-radius: 8px;
+       }
+
+
+       .page {
+           width: 100%;
+           height: 100%;
+           position: absolute;
+           top: 0;
+           left: 100%;
+           transition: left 0.4s ease-in-out;
+           padding: 40px;
+           box-sizing: border-box;
+           display: flex;
+           flex-direction: column;
+           justify-content: center;
+           align-items: center;
+       }
+
+
+       .page.active {
+           left: 0;
+       }
+
+
+       /* PAGE 1: Login */
+       .welcome-title {
+           color: #ffffff;
+           text-align: center;
+           margin-bottom: 24px;
+           font-size: 26px;
+           letter-spacing: 1px;
+           text-shadow: 0 2px 8px rgba(0, 0, 0, 0.75);
+       }
+
+       .login-box {
+           border: 2px solid rgba(255, 255, 255, 0.75);
+           padding: 30px;
+           border-radius: 6px;
+           text-align: center;
+           background: transparent;
+           width: 350px;
+       }
+
+       .login-box h3 {
+           color: #ffffff;
+           margin-top: 0;
+           text-shadow: 0 1px 6px rgba(0, 0, 0, 0.75);
+       }
+
+
+       .login-box input {
+           width: 90%;
+           padding: 10px;
+           margin-top: 15px;
+           border: 1px solid var(--border-color);
+           border-radius: 4px;
+           font-size: 16px;
+           text-align: center;
+           background: rgba(255, 255, 255, 0.9);
+       }
+
+
+       .login-box button {
+           margin-top: 15px;
+           padding: 10px 20px;
+           background: var(--primary-color);
+           color: white;
+           border: none;
+           border-radius: 4px;
+           cursor: pointer;
+           font-size: 16px;
+       }
+
+
+       .login-box button:hover {
+           background: var(--accent-color);
+       }
+
+
+       /* PAGE 2: Lot Selection */
+       #page2 h2 {
+           color: #ffffff;
+           text-shadow: 0 2px 8px rgba(0, 0, 0, 0.75);
+       }
+
+       .lot-list {
+           display: flex;
+           flex-direction: column;
+           gap: 15px;
+           width: 400px;
+       }
+
+
+       .lot-btn {
+           padding: 15px;
+           font-size: 18px;
+           background: rgba(255, 255, 255, 0.92);
+           border: 2px solid var(--primary-color);
+           border-radius: 6px;
+           cursor: pointer;
+           text-align: center;
+           transition: 0.2s;
+           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+       }
+
+
+       .lot-btn:hover {
+           background: var(--primary-color);
+           color: white;
+       }
+
+
+       /* PAGE 3: Grid View */
+       .grid-header {
+           width: 100%;
+           max-width: 500px;
+           display: grid;
+           grid-template-columns: 80px 1fr 80px;
+           align-items: center;
+           margin: 0 auto 15px auto;
+       }
+
+       .grid-header .back-btn {
+           justify-self: start;
+       }
+
+       #selectedLotTitle {
+           margin: 0;
+           text-align: center;
+           color: #ffffff;
+           text-shadow: 0 2px 8px rgba(0, 0, 0, 0.75);
+       }
+
+
+       .back-btn {
+           padding: 6px 12px;
+           background: #e74c3c;
+           color: white;
+           border: none;
+           border-radius: 4px;
+           cursor: pointer;
+       }
+
+
+       .parking-grid {
+           display: grid;
+           grid-template-columns: repeat(10, 35px);
+           grid-template-rows: repeat(10, 35px);
+           gap: 2px;
+           background: var(--primary-color);
+           padding: 2px;
+           border: 2px solid var(--primary-color);
+       }
+
+
+       .grid-cell {
+           background: white;
+           display: flex;
+           justify-content: center;
+           align-items: center;
+           font-weight: bold;
+           font-size: 14px;
+           cursor: pointer;
+           user-select: none;
+       }
+
+
+       .grid-cell.occupied {
+           background: #fadbd8;
+           color: #c0392b;
+       }
+
+
+       .grid-cell.reserved {
+           background: #d4efdf;
+           color: #27ae60;
+       }
+
+
+       .error-msg {
+           color: #ff6b6b;
+           font-size: 13px;
+           font-weight: bold;
+           margin-top: 8px;
+           text-shadow: 0 1px 4px rgba(0, 0, 0, 0.75);
+       }
+   </style>
+</head>
+<body>
+
+
+<div class="container">
+
+
+   <!-- PAGE 1: PRN Entry -->
+   <div id="page1" class="page active">
+       <h1 class="welcome-title">WELCOME TO MIT WPU'S PARKING SYSTEM</h1>
+       <div class="login-box">
+           <h3>Enter PRN</h3>
+           <input type="text" id="studentIdInput" maxlength="10" placeholder="10-digit PRN" onkeypress="allowNumbersOnly(event)">
+           <div id="loginError" class="error-msg"></div>
+           <br>
+           <button onclick="handleLogin()">Proceed</button>
+       </div>
+   </div>
+
+
+   <!-- PAGE 2: Parking Lot Selection -->
+   <div id="page2" class="page">
+       <h2 style="margin-bottom: 20px;">Select Parking Facility</h2>
+       <div id="lotContainer" class="lot-list">
+           <!-- Dynamically populated from Flask backend -->
+       </div>
+   </div>
+
+
+   <!-- PAGE 3: Grid Layout -->
+   <div id="page3" class="page">
+       <div class="grid-header">
+           <button class="back-btn" onclick="goToPage(2)">← Back</button>
+           <h3 id="selectedLotTitle">Parking Lot</h3>
+           <div></div>
+       </div>
+       <div id="parkingGrid" class="parking-grid">
+           <!-- Dynamically generated 10x10 grid mapping spots -->
+       </div>
+   </div>
+
+
+</div>
+
+
+<script>
+   const API_URL = "http://127.0.0.1:5000/api";
+   let currentUserId = null;
+
+
+   function goToPage(pageNum) {
+       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+       document.getElementById(`page${pageNum}`).classList.add('active');
+   }
+
+
+   // Restrict input to numbers only
+   function allowNumbersOnly(e) {
+       const charCode = (e.which) ? e.which : e.keyCode;
+       if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+           e.preventDefault();
+       }
+   }
+
+
+   // Handle Page 1 Validation & Login
+   function handleLogin() {
+       const inputVal = document.getElementById('studentIdInput').value.trim();
+       const errDiv = document.getElementById('loginError');
+
+
+       if (!/^\d{10}$/.test(inputVal)) {
+           errDiv.textContent = "Invalid PRN";
+           return;
+       }
+       errDiv.textContent = "";
+       currentUserId = inputVal;
+      
+       fetchParkingLots();
+       goToPage(2);
+   }
+
+
+   // Fetch Parking Lots from Flask Backend
+   async function fetchParkingLots() {
+       const container = document.getElementById('lotContainer');
+       container.innerHTML = "Loading parking facilities...";
+
+
+       try {
+           const response = await fetch(`${API_URL}/parkings`);
+           const lots = await response.json();
+
+
+           container.innerHTML = "";
+           if (lots.length === 0) {
+               container.innerHTML = "<p>No parking lots found in database.</p>";
+               return;
+           }
+
+
+           lots.forEach(lot => {
+               const btn = document.createElement('button');
+               btn.className = 'lot-btn';
+               btn.textContent = lot.name;
+               btn.onclick = () => loadParkingGrid(lot.id, lot.name);
+               container.appendChild(btn);
+           });
+       } catch (err) {
+           container.innerHTML = "<p style='color:red;'>Failed to connect to backend server.</p>";
+       }
+   }
+
+
+   // Load Page 3 Grid view for a specific parking lot
+   async function loadParkingGrid(parkingId, parkingName) {
+       document.getElementById('selectedLotTitle').textContent = parkingName;
+       const grid = document.getElementById('parkingGrid');
+       grid.innerHTML = "";
+
+
+       let activePlots = [];
+       try {
+           const response = await fetch(`${API_URL}/plots`);
+           const allPlots = await response.json();
+           activePlots = allPlots.filter(p => String(p.parking_id) === String(parkingId));
+       } catch (e) {
+           console.error("Could not load plots", e);
+       }
+
+
+       // Build 10x10 grid (1 to 100)
+       for (let i = 1; i <= 100; i++) {
+           const cell = document.createElement('div');
+           cell.className = 'grid-cell';
+           cell.textContent = i; // Number remains visible
+          
+           const plotNumberStr = `P${i}`;
+           const matchedPlot = activePlots.find(p => {
+               const dbPlot = String(p.plot_number).trim().toUpperCase();
+               return dbPlot === plotNumberStr || dbPlot === String(i);
+           });
+
+
+           if (matchedPlot) {
+               // Check if it's Reserved (green) or Occupied (red)
+               if (matchedPlot.status === 'Occupied') {
+                   cell.classList.add('occupied');
+                   cell.title = `Spot ${i} is Occupied`;
+               } else {
+                   cell.classList.add('reserved');
+                   cell.title = `Spot ${i} is Reserved (Click to mark Occupied)`;
+                   
+                   // Clicking a reserved spot gives option to turn it Occupied (red)
+                   cell.onclick = async () => {
+                       if (confirm(`Spot #${i} is Reserved. Do you want to mark it as Occupied?`)) {
+                           await occupySpot(parkingId, `P${i}`);
+                           loadParkingGrid(parkingId, parkingName);
+                       }
+                   };
+               }
+           } else {
+               // Empty spot: Click gives option to Reserve or Occupy
+               cell.onclick = async () => {
+                   const choice = prompt(`Spot #${i}: Type 'R' to Reserve (Green) or 'O' to mark as Occupied (Red):`, "R");
+                   if (!choice) return;
+
+                   let status = "Reserved";
+                   if (choice.toUpperCase() === "O") {
+                       status = "Occupied";
+                   } else if (choice.toUpperCase() !== "R") {
+                       alert("Invalid choice. Please type 'R' or 'O'.");
+                       return;
+                   }
+
+                   const success = await bookSpot(parkingId, `P${i}`, status);
+                   if (success) {
+                       loadParkingGrid(parkingId, parkingName);
+                   }
+               };
+           }
+           grid.appendChild(cell);
+       }
+
+
+       goToPage(3);
+   }
+
+
+   // Book or mark an empty spot
+   async function bookSpot(parkingId, plotNumber, status) {
+       try {
+           const response = await fetch(`${API_URL}/reservations`, {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify({
+                   user_id: currentUserId,
+                   parking_id: parkingId,
+                   plot_number: plotNumber,
+                   status: status
+               })
+           });
+           const result = await response.json();
+           if (response.ok) {
+               alert("Spot updated successfully!");
+               return true;
+           } else {
+               alert("Error: " + result.error);
+               return false;
+           }
+       } catch (err) {
+           alert("Network error while trying to process spot.");
+           return false;
+       }
+   }
+
+   // Verify credentials and transition reserved spot to occupied
+   async function occupySpot(parkingId, plotNumber) {
+       try {
+           const response = await fetch(`${API_URL}/reservations/occupy`, {
+               method: 'PUT',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify({
+                   user_id: currentUserId,
+                   parking_id: parkingId,
+                   plot_number: plotNumber
+               })
+           });
+           const result = await response.json();
+           if (response.ok) {
+               alert("Spot successfully marked as occupied!");
+           } else {
+               alert("Error: " + result.error); // Will show "Reserved by someone else" if user IDs don't match
+           }
+       } catch (err) {
+           alert("Network error while trying to update spot.");
+       }
+   }
+</script>
+
+
+</body>
+</html>
